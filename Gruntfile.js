@@ -3,6 +3,13 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        separator: '\n'
+      },
+      dist: {
+        src: ['public/client/*.js'],
+        dest: 'public/dist/built.js'
+      }
     },
 
     mochaTest: {
@@ -16,16 +23,26 @@ module.exports = function(grunt) {
 
     nodemon: {
       dev: {
-        script: 'server.js'
+        script: 'server.dev.js'
+      },
+      prod: {
+        script: 'server.prod.js'
       }
     },
 
     uglify: {
+      my_target: {
+        files: {
+          'public/dist/built.min.js': ['public/dist/built.js']
+        }
+      }
     },
 
     jshint: {
       files: [
         // Add filespec list here
+        'app/**/*.js',
+        'public/client/**/*.js'
       ],
       options: {
         force: 'true',
@@ -38,7 +55,16 @@ module.exports = function(grunt) {
     },
 
     cssmin: {
-        // Add filespec list here
+      // Add filespec list here
+      target: {
+        files: [{
+          expand: true,
+          cwd: 'public/',
+          src: ['*.css', '!*.min.css'],
+          dest: 'public/dist',
+          ext: '.min.css'
+        }]
+      }  
     },
 
     watch: {
@@ -107,6 +133,12 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deploy', [
       // add your production server task here
+      'jshint', 
+      'mochaTest',
+      'cssmin',
+      'concat',
+      'uglify',
+      'nodemon:dev'
   ]);
 
 
