@@ -1,25 +1,60 @@
 var mongoose = require('mongoose');
 var path = require('path');
+var crypto = require('crypto');
+var Promise = require('bluebird');
 
-mongoose.connect('mongodb://localhost/test')
+mongoose.connect('mongodb://localhost/users')
 
-var db = mongoose.connection();
+var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:' ));
-db.once('open', function(callback){
-  //yay!
-});
+// db.once('open', function(){
+//   //yay!
 
-
-
+// });
 var Schema = mongoose.Schema;
 
+var linkSchema = new Schema{(
+  hash : { type: String, requried: true, index: { unique: true } },
+  clicks : { type: Number, default: 0 },
+  fullLink: { type: String, requried: true }
+)}
 
+var userSchema = new Schema{(
+  username : { type: String, requried: true, index: { unique: true } },
+  password : { type: String, required: true },
+  links : [Links]
+)};
 
+linkSchema.pre('save', function(next){
+  var shasum = crypto.createHash('sha1');
+  this.hash = shasum.digest('hex').slice(0,5);
+  next();
+});
 
+userSchema.pre('save', function(next){
+  var cipher = Promise.promisify(bcrypt.hash);
+  cipher(this.password, null, null).bind(this)
+    .then(function(hash){
+      this.password = hash;
+    })
+})
 
+module.exports.Link = mongoose.model('Link', linkSchema);
 
+module.exports.User = mongoose.model('User', userSchema);
 
+//search for documents with filters
+  //username
+    // --> grab document ids
+
+//start up mongo server with node js
+//build collection schema on startup of server
+//how to query for username
+//validate password
+//insert new users
+//insert new links to a user document (specific user)
+//retrieve links for a specific user
 
 
 
