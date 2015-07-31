@@ -1,48 +1,50 @@
 var mongoose = require('mongoose');
 var path = require('path');
-var crypto = require('crypto');
-var Promise = require('bluebird');
 
-mongoose.connect('mongodb://localhost/users')
+mongoose.connect('mongodb://localhost/shortlydb');
 
 var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:' ));
-// db.once('open', function(){
-//   //yay!
-
-// });
-var Schema = mongoose.Schema;
-
-var linkSchema = new Schema{(
-  hash : { type: String, requried: true, index: { unique: true } },
-  clicks : { type: Number, default: 0 },
-  fullLink: { type: String, requried: true }
-)}
-
-var userSchema = new Schema{(
-  username : { type: String, requried: true, index: { unique: true } },
-  password : { type: String, required: true },
-  links : [Links]
-)};
-
-linkSchema.pre('save', function(next){
-  var shasum = crypto.createHash('sha1');
-  this.hash = shasum.digest('hex').slice(0,5);
-  next();
+db.once('open', function(){
+  console.log('Mongodb connecton is open!');
 });
 
-userSchema.pre('save', function(next){
-  var cipher = Promise.promisify(bcrypt.hash);
-  cipher(this.password, null, null).bind(this)
-    .then(function(hash){
-      this.password = hash;
-    })
-})
+module.exports = db;
 
-module.exports.Link = mongoose.model('Link', linkSchema);
 
-module.exports.User = mongoose.model('User', userSchema);
+
+// var Schema = mongoose.Schema;
+
+// var linkSchema = new Schema{(
+//   hash : { type: String, requried: true, index: { unique: true } },
+//   clicks : { type: Number, default: 0 },
+//   fullLink: { type: String, requried: true }
+// )}
+
+// var userSchema = new Schema{(
+//   username : { type: String, requried: true, index: { unique: true } },
+//   password : { type: String, required: true },
+//   links : [Links]
+// )};
+
+// linkSchema.pre('save', function(next){
+//   var shasum = crypto.createHash('sha1');
+//   this.hash = shasum.digest('hex').slice(0,5);
+//   next();
+// });
+
+// userSchema.pre('save', function(next){
+//   var cipher = Promise.promisify(bcrypt.hash);
+//   cipher(this.password, null, null).bind(this)
+//     .then(function(hash){
+//       this.password = hash;
+//     })
+// })
+
+// module.exports.Link = mongoose.model('Link', linkSchema);
+
+// module.exports.User = mongoose.model('User', userSchema);
 
 //search for documents with filters
   //username
